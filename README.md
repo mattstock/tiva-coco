@@ -23,10 +23,14 @@ To get all dependencies on Ubuntu:
     libmpc-dev autoconf texinfo build-essential libftdi-dev python-yaml \
     zlib1g-dev
 
-You will need an ARM bare-metal toolchain to build code for Stellaris targets. I
-like to use the excellent
-[summon-arm-toolchain](https://github.com/esden/summon-arm-toolchain) project.  
-This project contains good instructions to get an ARM toolchain working.
+You will need an ARM bare-metal toolchain to build code for Stellaris targets.
+You can get a toolchain from the 
+[gcc-arm-embedded](https://launchpad.net/gcc-arm-embedded) project that is
+pre-built for your platform. Extract the package and add the `bin` folder to 
+your PATH.
+
+Alternatively, you can use 
+[summon-arm-toolchain](https://github.com/esden/summon-arm-toolchain).
 
 Once you've installed the ARM toolchain, add the binaries to your path.
 
