@@ -40,7 +40,7 @@ MKDIR	= mkdir -p
 #######################################
 
 # list all object files
-OBJECTS = $(addprefix $(OUTDIR)/,$(SOURCES:.c=.o))
+OBJECTS = $(addprefix $(OUTDIR)/,$(notdir $(SOURCES:.c=.o)))
 
 # default: build bin
 all: $(OUTDIR)/$(TARGET).bin
