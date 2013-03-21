@@ -20,12 +20,15 @@ OUTDIR = build
 # STELLARISWARE_PATH: path to stellarisware folder
 STELLARISWARE_PATH = /home/eric/code/stellarisware
 
+# LD_SCRIPT: linker script
+LD_SCRIPT = lm4f120h5qr.ld
+
 # define flags
 CFLAGS = -g -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
 CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(STELLARISWARE_PATH)
 CFLAGS += -DTARGET_IS_BLIZZARD_RA1
-LDFLAGS = -T src/lm4f120h5qr.ld --entry ResetISR --gc-sections
+LDFLAGS = -T $(LD_SCRIPT) --entry ResetISR --gc-sections
 
 #######################################
 # end of user configuration
