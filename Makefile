@@ -10,7 +10,7 @@
 # TARGET: name of the output file
 TARGET = main
 # MCU: part number to build for
-MCU = msp430g2231
+MCU = LM4F120H5QR
 # SOURCES: list of input source sources
 SOURCES = main.c startup_gcc.c
 # INCLUDES: list of includes, by default, use Includes directory
@@ -23,7 +23,7 @@ STELLARISWARE_PATH = /home/eric/code/stellarisware
 # define flags
 CFLAGS = -g -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
 CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall
-CFLAGS += -pedantic -DPART_LM4F120H5QR -c -I$(STELLARISWARE_PATH)
+CFLAGS += -pedantic -DPART_$(MCU) -c -I$(STELLARISWARE_PATH)
 CFLAGS += -DTARGET_IS_BLIZZARD_RA1
 LDFLAGS = -T src/lm4f120h5qr.ld --entry ResetISR --gc-sections
 
