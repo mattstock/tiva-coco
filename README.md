@@ -24,7 +24,7 @@ To get all dependencies on Ubuntu:
     zlib1g-dev
 
 You will need an ARM bare-metal toolchain to build code for Stellaris targets.
-You can get a toolchain from the 
+You can get a toolchain from the
 [gcc-arm-embedded](https://launchpad.net/gcc-arm-embedded) project that is
 pre-built for your platform. Extract the package and add the `bin` folder to
 your PATH.
@@ -36,14 +36,24 @@ Once you've installed the ARM toolchain, add the binaries to your path.
 
 The StellarisWare package contains all of the header files and drivers for
 Stellaris parts. Grab the file *SW-EK-LM4F12XL-9353.exe* from
-[here](http://www.ti.com/tool/sw-ek-lm4f120xl) and unzip it into a directory,
-then run `make` to build StellarisWare.
+[here](http://www.ti.com/tool/sw-ek-lm4f120xl) and unzip it into a directory.
 
     unzip SW-EK-LM4F120XL-9453.exe
-    make
+
+If you are using gcc-arm-embedded, you must edit the makedefs file in the
+extracted StellarisWare directory to point at the correct compiler. For version 
+4.7.3, change the line:
+
+    CC=${PREFIX}-gcc
+
+to:
+
+    CC=${PREFIX}-gcc-4.7.3
+
+then run `make` to build StellarisWare.
 
 ## Writing and Building Firmware
-**NOTE:** This currently only works for the LM4F120H5QR, which is the target on
+**NOTE:** This is only tested with the LM4F120H5QR, which is the target on
 the Stellaris Launchpad.
 
 1. Clone the
@@ -54,7 +64,7 @@ the Stellaris Launchpad.
 
 2. Modify the Makefile:
     * Set TARGET to the desired name of the output file (eg: TARGET = main)
-    * Set SOURCES to a list of your sources (eg: SOURCES = main.c 
+    * Set SOURCES to a list of your sources (eg: SOURCES = main.c
       startup\_gcc.c)
     * Set STELLARISWARE\_PATH to the full path to where you extracted and built
       StellarisWare (eg: STELLARISWARE_PATH = /home/eric/code/stellarisware)
@@ -65,7 +75,7 @@ the Stellaris Launchpad.
 
 ## Flashing
 
-The easiest way to flash your device is using lm4flash. First, grab lm4tools 
+The easiest way to flash your device is using lm4flash. First, grab lm4tools
 from Git.
 
     git clone git://github.com/utzig/lm4tools.git
