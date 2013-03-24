@@ -26,36 +26,37 @@ To get all dependencies on Ubuntu:
 You will need an ARM bare-metal toolchain to build code for Stellaris targets.
 You can get a toolchain from the 
 [gcc-arm-embedded](https://launchpad.net/gcc-arm-embedded) project that is
-pre-built for your platform. Extract the package and add the `bin` folder to 
+pre-built for your platform. Extract the package and add the `bin` folder to
 your PATH.
 
-Alternatively, you can use 
+Alternatively, you can use
 [summon-arm-toolchain](https://github.com/esden/summon-arm-toolchain).
 
 Once you've installed the ARM toolchain, add the binaries to your path.
 
 The StellarisWare package contains all of the header files and drivers for
 Stellaris parts. Grab the file *SW-EK-LM4F12XL-9353.exe* from
-[here](http://www.ti.com/tool/sw-ek-lm4f120xl) and unzip it into a directory, 
+[here](http://www.ti.com/tool/sw-ek-lm4f120xl) and unzip it into a directory,
 then run `make` to build StellarisWare.
 
     unzip SW-EK-LM4F120XL-9453.exe
     make
 
 ## Writing and Building Firmware
-**NOTE:** This currently only works for the LM4F120H5QR, which is the target on 
+**NOTE:** This currently only works for the LM4F120H5QR, which is the target on
 the Stellaris Launchpad.
 
 1. Clone the
    [stellaris-template](https://github.com/uctools/stellaris-templates)
    repository (or fork it and clone your own repository).
 
-        git clone git@github.com:uctools:stellaris-template
+        git clone git@github.com:uctools/stellaris-template
 
 2. Modify the Makefile:
     * Set TARGET to the desired name of the output file (eg: TARGET = main)
-    * Set SOURCES to a list of your sources (eg: SOURCES = main.c startup_gcc.c)
-    * Set STELLARISWARE_PATH to the full path to where you extracted and built
+    * Set SOURCES to a list of your sources (eg: SOURCES = main.c 
+      startup\_gcc.c)
+    * Set STELLARISWARE\_PATH to the full path to where you extracted and built
       StellarisWare (eg: STELLARISWARE_PATH = /home/eric/code/stellarisware)
 
 3. Run `make`
