@@ -65,3 +65,5 @@ $(OUTDIR):
 
 clean:
 	-$(RM) $(OUTDIR)/*
+
+.PHONY: all clean
