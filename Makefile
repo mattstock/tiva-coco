@@ -37,7 +37,7 @@ LDFLAGS = -T $(LD_SCRIPT) --entry ResetISR --gc-sections
 #######################################
 # binaries
 #######################################
-CC = arm-none-eabi-gcc-4.7.3
+CC = arm-none-eabi-gcc
 LD = arm-none-eabi-ld
 OBJCOPY = arm-none-eabi-objcopy
 RM      = rm -f

@@ -24,33 +24,20 @@ To get all dependencies on Ubuntu:
     zlib1g-dev
 
 You will need an ARM bare-metal toolchain to build code for Stellaris targets.
-You can get a toolchain from the
-[gcc-arm-embedded](https://launchpad.net/gcc-arm-embedded) project that is
-pre-built for your platform. Extract the package and add the `bin` folder to
-your PATH.
-
-Alternatively, you can use
-[summon-arm-toolchain](https://github.com/esden/summon-arm-toolchain).
+You can get a toolchain for the Stellaris targets by using
+[summon-arm-toolchain](https://github.com/esden/summon-arm-toolchain). Add the
+`bin` folder to your path.
 
 Once you've installed the ARM toolchain, add the binaries to your path.
 
 The StellarisWare package contains all of the header files and drivers for
 Stellaris parts. Grab the file *SW-EK-LM4F12XL-9353.exe* from
-[here](http://www.ti.com/tool/sw-ek-lm4f120xl) and unzip it into a directory.
+[here](http://www.ti.com/tool/sw-ek-lm4f120xl) and unzip it into a directory
+then run `make` to build StellarisWare.
 
     unzip SW-EK-LM4F120XL-9453.exe
-
-If you are using gcc-arm-embedded, you must edit the makedefs file in the
-extracted StellarisWare directory to point at the correct compiler. For version 
-4.7.3, change the line:
-
-    CC=${PREFIX}-gcc
-
-to:
-
-    CC=${PREFIX}-gcc-4.7.3
-
-then run `make` to build StellarisWare.
+    cd stellarisware
+    make
 
 ## Writing and Building Firmware
 **NOTE:** This is only tested with the LM4F120H5QR, which is the target on
