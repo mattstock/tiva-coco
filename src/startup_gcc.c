@@ -4,24 +4,26 @@
 //
 // Copyright (c) 2012 Texas Instruments Incorporated.  All rights reserved.
 // Software License Agreement
-// 
+//
 // Texas Instruments (TI) is supplying this software for use solely and
 // exclusively on TI's microcontroller products. The software is owned by
 // TI and/or its suppliers, and is protected under applicable copyright
 // laws. You may not combine this software with "viral" open-source
 // software in order to form a larger program.
-// 
+//
 // THIS SOFTWARE IS PROVIDED "AS IS" AND WITH ALL FAULTS.
 // NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT
 // NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 // A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. TI SHALL NOT, UNDER ANY
 // CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
 // DAMAGES, FOR ANY REASON WHATSOEVER.
-// 
+//
 // This is part of revision 9453 of the EK-LM4F120XL Firmware Package.
 //
 //*****************************************************************************
 
+#include <stdbool.h>
+#include <stdint.h>
 #include "inc/hw_nvic.h"
 #include "inc/hw_types.h"
 
@@ -59,7 +61,7 @@ __attribute__ ((section(".isr_vector")))
 void (* const g_pfnVectors[])(void) =
 {
     (void (*)(void))((unsigned long)pulStack + sizeof(pulStack)),
-                                            // The initial stack pointer
+					    // The initial stack pointer
     ResetISR,                               // The reset handler
     NmiSR,                                  // The NMI handler
     FaultISR,                               // The hard fault handler
@@ -250,21 +252,21 @@ ResetISR(void)
     pulSrc = &_etext;
     for(pulDest = &_data; pulDest < &_edata; )
     {
-        *pulDest++ = *pulSrc++;
+	*pulDest++ = *pulSrc++;
     }
 
     //
     // Zero fill the bss segment.
     //
     __asm("    ldr     r0, =_bss\n"
-          "    ldr     r1, =_ebss\n"
-          "    mov     r2, #0\n"
-          "    .thumb_func\n"
-          "zero_loop:\n"
-          "        cmp     r0, r1\n"
-          "        it      lt\n"
-          "        strlt   r2, [r0], #4\n"
-          "        blt     zero_loop");
+	  "    ldr     r1, =_ebss\n"
+	  "    mov     r2, #0\n"
+	  "    .thumb_func\n"
+	  "zero_loop:\n"
+	  "        cmp     r0, r1\n"
+	  "        it      lt\n"
+	  "        strlt   r2, [r0], #4\n"
+	  "        blt     zero_loop");
 
     //
     // Enable the floating-point unit.  This must be done here to handle the
@@ -277,8 +279,8 @@ ResetISR(void)
     // this project.
     //
     HWREG(NVIC_CPAC) = ((HWREG(NVIC_CPAC) &
-                         ~(NVIC_CPAC_CP10_M | NVIC_CPAC_CP11_M)) |
-                        NVIC_CPAC_CP10_FULL | NVIC_CPAC_CP11_FULL);
+			 ~(NVIC_CPAC_CP10_M | NVIC_CPAC_CP11_M)) |
+			NVIC_CPAC_CP10_FULL | NVIC_CPAC_CP11_FULL);
 
     //
     // Call the application's entry point.

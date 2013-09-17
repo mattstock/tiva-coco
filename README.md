@@ -1,4 +1,4 @@
-Stellaris Template
+Tiva Template
 ==================
 
 ## Toolchain
@@ -23,38 +23,36 @@ To get all dependencies on Ubuntu:
     libmpc-dev autoconf texinfo build-essential libftdi-dev python-yaml \
     zlib1g-dev
 
-You will need an ARM bare-metal toolchain to build code for Stellaris targets.
-You can get a toolchain for the Stellaris targets by using
-[summon-arm-toolchain](https://github.com/esden/summon-arm-toolchain). Add the
-`bin` folder to your path.
+You will need an ARM bare-metal toolchain to build code for Tiva targets.
+You can get a toolchain from the
+[gcc-arm-embedded](https://launchpad.net/gcc-arm-embedded) project that is
+pre-built for your platform. Extract the package and add the `bin` folder to
+your PATH.
 
-Once you've installed the ARM toolchain, add the binaries to your path.
+The TivaWare package contains all of the header files and drivers for
+Tiva parts. Grab the file *SW-TM4C-1.1.exe* from
+[here](http://software-dl.ti.com/tiva-c/SW-TM4C/latest/index_FDS.html) and unzip it into a directory
+then run `make` to build TivaWare.
 
-The StellarisWare package contains all of the header files and drivers for
-Stellaris parts. Grab the file *SW-EK-LM4F12XL-9353.exe* from
-[here](http://www.ti.com/tool/sw-ek-lm4f120xl) and unzip it into a directory
-then run `make` to build StellarisWare.
-
-    unzip SW-EK-LM4F120XL-9453.exe
-    cd stellarisware
+    mkdir tivaware
+    cd tivaware
+    unzip SW-TM4C-1.1.exe
     make
 
 ## Writing and Building Firmware
-**NOTE:** This is only tested with the LM4F120H5QR, which is the target on
-the Stellaris Launchpad.
 
 1. Clone the
-   [stellaris-template](https://github.com/uctools/stellaris-templates)
+   [tiva-template](https://github.com/uctools/tiva-template)
    repository (or fork it and clone your own repository).
 
-        git clone git@github.com:uctools/stellaris-template
+	git clone git@github.com:uctools/tiva-template
 
 2. Modify the Makefile:
     * Set TARGET to the desired name of the output file (eg: TARGET = main)
     * Set SOURCES to a list of your sources (eg: SOURCES = main.c
       startup\_gcc.c)
-    * Set STELLARISWARE\_PATH to the full path to where you extracted and built
-      StellarisWare (eg: STELLARISWARE_PATH = /home/eric/code/stellarisware)
+    * Set TIVAWARE\_PATH to the full path to where you extracted and built
+      TivaWare (eg: TIVAWARE_PATH = /home/eric/code/tivaware)
 
 3. Run `make`
 

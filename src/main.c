@@ -1,7 +1,10 @@
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_sysctl.h"
-#include "inc/hw_types.h"
 #include "driverlib/gpio.h"
 #include "driverlib/rom.h"
 #include "driverlib/sysctl.h"
@@ -19,11 +22,11 @@ int main()
     ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, LED_RED|LED_BLUE|LED_GREEN);
 
    for (;;) {
-        // set the red LED pin high, others low
-        ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, LED_RED);
-        ROM_SysCtlDelay(5000000);
-        ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, 0);
-        ROM_SysCtlDelay(5000000);
+	// set the red LED pin high, others low
+	ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, LED_RED);
+	ROM_SysCtlDelay(5000000);
+	ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, 0);
+	ROM_SysCtlDelay(5000000);
     }
 
 }
