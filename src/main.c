@@ -1,21 +1,13 @@
 #include <stdbool.h>
 #include <stdint.h>
-
-#include "inc/hw_types.h"
 #include "inc/hw_memmap.h"
 #include "driverlib/gpio.h"
 #include "driverlib/rom.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/pin_map.h"
-#include "driverlib/ssi.h"
-#include "driverlib/can.h"
-
-#define LED_GREEN0 GPIO_PIN_0
-#define LED_GREEN1 GPIO_PIN_4
-#define LED_GREEN2 GPIO_PIN_0
-#define LED_GREEN3 GPIO_PIN_1
-
-uint32_t readByte;
+#include "ff.h"
+#include "diskio.h"
+#include "sdcard.h"
 
 const uint16_t f88[] = {
   0x0000, 0x0000, 0x0000, 0x0000, //
@@ -149,39 +141,53 @@ const uint16_t f88[] = {
 };
 
 void setAddr(uint32_t address) {
-  ROM_SSIDataPut(SSI2_BASE, 0x01);
-  ROM_SSIDataPut(SSI2_BASE, (address >> 16));
-  ROM_SSIDataPut(SSI2_BASE, (address >> 8));
-  ROM_SSIDataPut(SSI2_BASE, address);
+  ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, 0);
+  ROM_SSIDataPut(SPI_BASE, 0x01);
+  ROM_SSIDataPut(SPI_BASE, (address >> 16));
+  ROM_SSIDataPut(SPI_BASE, (address >> 8));
+  ROM_SSIDataPut(SPI_BASE, address);
+	ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
 }
 
 void setData(uint16_t data) {
-  ROM_SSIDataPut(SSI2_BASE, 0x03);
-  ROM_SSIDataPut(SSI2_BASE, (data >> 8));
-  ROM_SSIDataPut(SSI2_BASE, data);
+	ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, 0);
+  ROM_SSIDataPut(SPI_BASE, 0x03);
+  ROM_SSIDataPut(SPI_BASE, (data >> 8));
+  ROM_SSIDataPut(SPI_BASE, data);
+	ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
+}
+
+void spi_init() {
+  ROM_SysCtlPeripheralEnable(SPI_SYSCTL);
+  ROM_SysCtlPeripheralEnable(SPI_SYSCTL_PORT);
+  ROM_GPIOPinConfigure(SPI_RX_MUX); // rx
+  ROM_GPIOPinConfigure(SPI_TX_MUX); // tx
+  ROM_GPIOPinConfigure(SPI_CLK_MUX); // clk
+  ROM_GPIOPinTypeSSI(SPI_GPIO_BASE, SPI_RX | SPI_TX | SPI_CLK);
+  ROM_SSIConfigSetExpClk(SPI_BASE, 120000000, SSI_FRF_MOTO_MODE_0,
+		     SSI_MODE_MASTER, 1000000, 8);
+  ROM_SSIEnable(SPI_BASE);
+
+  ROM_SysCtlPeripheralEnable(COCO_CS_SYSCTL);
+  ROM_GPIOPinTypeGPIOOutput(COCO_CS_BASE, COCO_CS);
+  ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
+  ROM_SysCtlPeripheralEnable(SSD_CS_SYSCTL);
+  ROM_GPIOPinTypeGPIOOutput(SSD_CS_BASE, SSD_CS);
+	ROM_GPIOPinWrite(SSD_CS_BASE, SSD_CS, SSD_CS);
+
+	uint32_t readByte;
+ 
+  while (ROM_SSIDataGetNonBlocking(SPI_BASE, &readByte));
 }
 
 int main() {
   SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
-  ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI2);
-  ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
-  ROM_GPIOPinConfigure(GPIO_PD0_SSI2XDAT1); // rx
-  ROM_GPIOPinConfigure(GPIO_PD1_SSI2XDAT0); // tx
-  ROM_GPIOPinConfigure(GPIO_PD2_SSI2FSS); // ss
-  ROM_GPIOPinConfigure(GPIO_PD3_SSI2CLK); // clk
-  ROM_GPIOPinTypeSSI(GPIO_PORTD_BASE, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
- 
-  
-  ROM_SSIConfigSetExpClk(SSI2_BASE, 120000000, SSI_FRF_MOTO_MODE_0,
-		     SSI_MODE_MASTER, 1000000, 8);
-  ROM_SSIEnable(SSI2_BASE);
-  ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-  ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPION);
-  ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, LED_GREEN0|LED_GREEN1);
-  ROM_GPIOPinTypeGPIOOutput(GPIO_PORTN_BASE, LED_GREEN2|LED_GREEN3);
-  
-  while (ROM_SSIDataGetNonBlocking(SSI2_BASE, &readByte));
+	// Status LEDs  
+  ROM_SysCtlPeripheralEnable(SPI_LED_SYSCTL);
+  ROM_GPIOPinTypeGPIOOutput(SPI_LED_BASE, SPI_LED_BUSY|SPI_LED_ERROR);
+
+	spi_init();
 
   setAddr(0x413000);
   for (int i=0; i < 4*128; i++)
@@ -198,11 +204,9 @@ int main() {
   }
 
   for (;;) {
-    ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_GREEN0|LED_GREEN1, LED_GREEN0|LED_GREEN1);
-    ROM_GPIOPinWrite(GPIO_PORTN_BASE, LED_GREEN2|LED_GREEN3, 0);
+    ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_BUSY);
     ROM_SysCtlDelay(5000000);
-    ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_GREEN0|LED_GREEN1, 0);
-    ROM_GPIOPinWrite(GPIO_PORTN_BASE, LED_GREEN2|LED_GREEN3, LED_GREEN2|LED_GREEN3);
+    ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
     ROM_SysCtlDelay(5000000);
   }
 }

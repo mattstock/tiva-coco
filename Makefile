@@ -12,7 +12,7 @@ TARGET = main
 # MCU: part number to build for
 MCU = TM4C1294NCPDT
 # SOURCES: list of input source sources
-SOURCES = main.c startup_gcc.c
+SOURCES = main.c ff.c diskio.c startup_gcc.c
 # INCLUDES: list of includes, by default, use Includes directory
 INCLUDES = -IInclude
 # OUTDIR: directory to use for output
@@ -67,5 +67,8 @@ $(OUTDIR):
 
 clean:
 	-$(RM) $(OUTDIR)/*
+
+install: $(OUTDIR)/$(TARGET).bin
+	../lm4tools/lm4flash/lm4flash $(OUTDIR)/$(TARGET).bin
 
 .PHONY: all clean
