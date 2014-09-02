@@ -171,9 +171,6 @@ void spi_init() {
   ROM_SysCtlPeripheralEnable(COCO_CS_SYSCTL);
   ROM_GPIOPinTypeGPIOOutput(COCO_CS_BASE, COCO_CS);
   ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
-  ROM_SysCtlPeripheralEnable(SSD_CS_SYSCTL);
-  ROM_GPIOPinTypeGPIOOutput(SSD_CS_BASE, SSD_CS);
-	ROM_GPIOPinWrite(SSD_CS_BASE, SSD_CS, SSD_CS);
 
 	uint32_t readByte;
  
@@ -182,10 +179,6 @@ void spi_init() {
 
 int main() {
   SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
-
-	// Status LEDs  
-  ROM_SysCtlPeripheralEnable(SPI_LED_SYSCTL);
-  ROM_GPIOPinTypeGPIOOutput(SPI_LED_BASE, SPI_LED_BUSY|SPI_LED_ERROR);
 
 	spi_init();
 
