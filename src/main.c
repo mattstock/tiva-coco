@@ -7,7 +7,14 @@
 #include "driverlib/pin_map.h"
 #include "ff.h"
 #include "diskio.h"
-#include "sdcard.h"
+
+#define SPI_LED_BASE GPIO_PORTF_BASE
+#define SPI_LED_SYSCTL SYSCTL_PERIPH_GPIOF
+#define SPI_LED_BUSY GPIO_PIN_0
+#define SPI_LED_ERROR GPIO_PIN_4
+#define COCO_CS_SYSCTL SYSCTL_PERIPH_GPIOC
+#define COCO_CS_BASE GPIO_PORTC_BASE
+#define COCO_CS GPIO_PIN_6
 
 const uint16_t f88[] = {
   0x0000, 0x0000, 0x0000, 0x0000, //
@@ -142,46 +149,49 @@ const uint16_t f88[] = {
 
 void setAddr(uint32_t address) {
   ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, 0);
-  ROM_SSIDataPut(SPI_BASE, 0x01);
-  ROM_SSIDataPut(SPI_BASE, (address >> 16));
-  ROM_SSIDataPut(SPI_BASE, (address >> 8));
-  ROM_SSIDataPut(SPI_BASE, address);
-	ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
+  ROM_SSIDataPut(SDC_SSI_BASE, 0x01);
+  ROM_SSIDataPut(SDC_SSI_BASE, (address >> 16));
+  ROM_SSIDataPut(SDC_SSI_BASE, (address >> 8));
+  ROM_SSIDataPut(SDC_SSI_BASE, address);
+  ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
 }
 
 void setData(uint16_t data) {
-	ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, 0);
-  ROM_SSIDataPut(SPI_BASE, 0x03);
-  ROM_SSIDataPut(SPI_BASE, (data >> 8));
-  ROM_SSIDataPut(SPI_BASE, data);
-	ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
+  ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, 0);
+  ROM_SSIDataPut(SDC_SSI_BASE, 0x03);
+  ROM_SSIDataPut(SDC_SSI_BASE, (data >> 8));
+  ROM_SSIDataPut(SDC_SSI_BASE, data);
+  ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
 }
 
-void spi_init() {
-  ROM_SysCtlPeripheralEnable(SPI_SYSCTL);
-  ROM_SysCtlPeripheralEnable(SPI_SYSCTL_PORT);
-  ROM_GPIOPinConfigure(SPI_RX_MUX); // rx
-  ROM_GPIOPinConfigure(SPI_TX_MUX); // tx
-  ROM_GPIOPinConfigure(SPI_CLK_MUX); // clk
-  ROM_GPIOPinTypeSSI(SPI_GPIO_BASE, SPI_RX | SPI_TX | SPI_CLK);
-  ROM_SSIConfigSetExpClk(SPI_BASE, 120000000, SSI_FRF_MOTO_MODE_0,
-		     SSI_MODE_MASTER, 1000000, 8);
-  ROM_SSIEnable(SPI_BASE);
+FATFS fatfs_obj;
+DIR dir_obj;
+FIL fil_obj;
+FILINFO fno;
 
+int main() {
+  FRESULT res;
+
+  ROM_SysCtlPeripheralEnable(SPI_LED_SYSCTL);
+  ROM_GPIOPinTypeGPIOOutput(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY);
+
+  SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+
+  disk_initialize(0);
   ROM_SysCtlPeripheralEnable(COCO_CS_SYSCTL);
   ROM_GPIOPinTypeGPIOOutput(COCO_CS_BASE, COCO_CS);
   ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
 
-	uint32_t readByte;
- 
-  while (ROM_SSIDataGetNonBlocking(SPI_BASE, &readByte));
-}
+/*  if ((res = f_mount(0, &fatfs_obj))) {
+    ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
+    while (1);
+  }
 
-int main() {
-  SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
-
-	spi_init();
-
+  if ((res = f_opendir(&dir_obj, (const TCHAR *)"/"))) {
+    ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_BUSY);
+    while (1);
+  } */
+  
   setAddr(0x413000);
   for (int i=0; i < 4*128; i++)
     setData(f88[i]);
@@ -196,10 +206,5 @@ int main() {
     //    ROM_SysCtlDelay(100000);
   }
 
-  for (;;) {
-    ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_BUSY);
-    ROM_SysCtlDelay(5000000);
-    ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
-    ROM_SysCtlDelay(5000000);
-  }
+  while (1);
 }

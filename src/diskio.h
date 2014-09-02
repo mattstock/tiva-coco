@@ -1,5 +1,5 @@
-/*-----------------------------------------------------------------------/
-/  Low level disk interface modlue include file   (C)ChaN, 2013          /
+/*-----------------------------------------------------------------------
+/  Low level disk interface modlue include file   (C)ChaN, 2012
 /-----------------------------------------------------------------------*/
 
 #ifndef _DISKIO_DEFINED
@@ -12,11 +12,29 @@ extern "C" {
 #define _USE_WRITE	1	/* 1: Enable disk_write function */
 #define _USE_IOCTL	1	/* 1: Enable disk_ioctl fucntion */
 
+
 #include "integer.h"
 
+/* Peripheral definitions for board */
+// SSI port
+#define SDC_SSI_BASE            SSI2_BASE
+#define SDC_SSI_SYSCTL_PERIPH   SYSCTL_PERIPH_SSI2
+
+// GPIO for SSI pins
+#define SDC_GPIO_PORT_BASE      GPIO_PORTD_BASE
+#define SDC_GPIO_SYSCTL_PERIPH  SYSCTL_PERIPH_GPIOD
+#define SDC_SSI_CLK             GPIO_PIN_3
+#define SDC_SSI_TX              GPIO_PIN_1
+#define SDC_SSI_RX              GPIO_PIN_0
+#define SPI_TX_MUX GPIO_PD1_SSI2XDAT0
+#define SPI_RX_MUX GPIO_PD0_SSI2XDAT1
+#define SPI_CLK_MUX GPIO_PD3_SSI2CLK
+#define SDC_SSI_FSS             GPIO_PIN_2
+#define SDC_SSI_PINS            (SDC_SSI_TX | SDC_SSI_RX | SDC_SSI_CLK |      \
+                                 SDC_SSI_FSS)
 
 /* Status of Disk Functions */
-typedef BYTE	DSTATUS;
+typedef BYTEC	DSTATUS;
 
 /* Results of Disk Functions */
 typedef enum {
@@ -31,16 +49,15 @@ typedef enum {
 /*---------------------------------------*/
 /* Prototypes for disk control functions */
 
-
-DSTATUS disk_initialize (BYTE pdrv);
-DSTATUS disk_status (BYTE pdrv);
-DRESULT disk_read (BYTE pdrv, BYTE* buff, DWORD sector, UINT count);
-DRESULT disk_write (BYTE pdrv, const BYTE* buff, DWORD sector, UINT count);
-DRESULT disk_ioctl (BYTE pdrv, BYTE cmd, void* buff);
+void attach_cs_pin (void (*cs_low)(void), void (*cs_high)(void));
+DSTATUS disk_initialize (BYTEC);
+DSTATUS disk_status (BYTEC);
+DRESULT disk_read (BYTEC, BYTEC*, DWORD, BYTEC);
+DRESULT disk_write (BYTEC, const BYTEC*, DWORD, BYTEC);
+DRESULT disk_ioctl (BYTEC, BYTEC, void*);
 
 
 /* Disk Status Bits (DSTATUS) */
-
 #define STA_NOINIT		0x01	/* Drive not initialized */
 #define STA_NODISK		0x02	/* No medium in the drive */
 #define STA_PROTECT		0x04	/* Write protected */
@@ -72,6 +89,15 @@ DRESULT disk_ioctl (BYTE pdrv, BYTE cmd, void* buff);
 #define ATA_GET_REV			20	/* Get F/W revision */
 #define ATA_GET_MODEL		21	/* Get model name */
 #define ATA_GET_SN			22	/* Get serial number */
+
+
+/* MMC card type flags (MMC_GET_TYPE) */
+#define CT_MMC		0x01		/* MMC ver 3 */
+#define CT_SD1		0x02		/* SD ver 1 */
+#define CT_SD2		0x04		/* SD ver 2 */
+#define CT_SDC		(CT_SD1|CT_SD2)	/* SD */
+#define CT_BLOCK	0x08		/* Block addressing */
+
 
 #ifdef __cplusplus
 }
