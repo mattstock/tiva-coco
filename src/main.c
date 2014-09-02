@@ -19,20 +19,37 @@
 #define COCO_CS_BASE GPIO_PORTC_BASE
 #define COCO_CS GPIO_PIN_6
 
+FATFS fatfs_obj;
+DIR dir_obj;
+FIL fil_obj;
+FILINFO fno;
+FRESULT res;
+
 void setAddr(uint32_t address) {
+  uint32_t res;
+
   ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, 0);
   ROM_SSIDataPut(SDC_SSI_BASE, 0x01);
+  ROM_SSIDataGet(SDC_SSI_BASE, &res);
   ROM_SSIDataPut(SDC_SSI_BASE, (address >> 16));
+  ROM_SSIDataGet(SDC_SSI_BASE, &res);
   ROM_SSIDataPut(SDC_SSI_BASE, (address >> 8));
+  ROM_SSIDataGet(SDC_SSI_BASE, &res);
   ROM_SSIDataPut(SDC_SSI_BASE, address);
+  ROM_SSIDataGet(SDC_SSI_BASE, &res);
   ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
 }
 
 void setData(uint16_t data) {
+  uint32_t res;
+
   ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, 0);
   ROM_SSIDataPut(SDC_SSI_BASE, 0x03);
+  ROM_SSIDataGet(SDC_SSI_BASE, &res);
   ROM_SSIDataPut(SDC_SSI_BASE, (data >> 8));
+  ROM_SSIDataGet(SDC_SSI_BASE, &res);
   ROM_SSIDataPut(SDC_SSI_BASE, data);
+  ROM_SSIDataGet(SDC_SSI_BASE, &res);
   ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
 }
 
@@ -55,34 +72,44 @@ void uart_init() {
                            UART_CONFIG_PAR_NONE));
 }
 
-void UART_println(char *str) {
-  uint16_t i = 0;
+void UART_printstr(char *str) {
+  uint16_t i=0;
 
   while (str[i] != '\0') {
     ROM_UARTCharPut(UART0_BASE, str[i++]);
   }
 }
 
+void UART_print_dirent() {
+  UART_printstr("File name: "); 
+  for (uint8_t i=0; i < 13; i++) {
+    ROM_UARTCharPut(UART0_BASE, fno.fname[i]);
+  }
+  UART_printstr("\r\n");
+
+}
+
 int main() {
-  FATFS fatfs_obj;
-  DIR dir_obj;
-  FIL fil_obj;
-  FILINFO fno;
-  FRESULT res;
 
   ROM_SysCtlPeripheralEnable(SPI_LED_SYSCTL);
   ROM_GPIOPinTypeGPIOOutput(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY);
+
 
   clockFreq = MAP_SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ |
                                              SYSCTL_OSC_MAIN |
                                              SYSCTL_USE_PLL |
                                              SYSCTL_CFG_VCO_480), 120000000);
 
-  uart_init();
-  disk_initialize(0);
+
   ROM_SysCtlPeripheralEnable(COCO_CS_SYSCTL);
   ROM_GPIOPinTypeGPIOOutput(COCO_CS_BASE, COCO_CS);
   ROM_GPIOPinWrite(COCO_CS_BASE, COCO_CS, COCO_CS);
+
+  uart_init();
+  disk_initialize(0);
+
+  ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_BUSY|SPI_LED_ERROR);
+
 
   if ((res = f_mount(0, &fatfs_obj))) {
     ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
@@ -101,7 +128,7 @@ int main() {
   }
   
   while (fno.fname[0] != '\0') {
-    UART_println(fno.fname);
+    UART_print_dirent(&fno);
     if ((res = f_readdir(&dir_obj, &fno)) != FR_OK) {
       ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
       while (1);

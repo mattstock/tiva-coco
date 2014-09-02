@@ -484,7 +484,7 @@ DSTATUS disk_initialize (
 
     if (ty) {            /* Initialization succeded */
         Stat &= ~STA_NOINIT;        /* Clear STA_NOINIT */
-        set_max_speed();
+//        set_max_speed();
     } else {            /* Initialization failed */
         power_off();
     }
