@@ -123,7 +123,7 @@ void rcvr_spi_m (BYTEC *dst)
 static
 BYTEC wait_ready (void)
 {
-    BYTEC res = 0x00;
+    BYTEC res = 0xff;
 	unsigned int i;
 
     //Timer2 = 50;    /* Wait for ready in timeout of 500ms */
@@ -178,6 +178,8 @@ void send_initial_clock_train(void)
 /* When the target system does not support socket power control, there   */
 /* is nothing to do in these functions and chk_power always returns 1.   */
 
+extern uint32_t clockFreq;
+
 static
 void power_on (void)
 {
@@ -203,7 +205,7 @@ void power_on (void)
     ROM_GPIOPinTypeGPIOOutput(SDC_GPIO_PORT_BASE, SDC_SSI_FSS);
 
     /* Configure the SSI0 port */
-    ROM_SSIConfigSetExpClk(SDC_SSI_BASE, 120000000, SSI_FRF_MOTO_MODE_0,
+    ROM_SSIConfigSetExpClk(SDC_SSI_BASE, clockFreq, SSI_FRF_MOTO_MODE_0,
 		           SSI_MODE_MASTER, 1000000, 8);
     ROM_SSIEnable(SDC_SSI_BASE);
 
@@ -231,7 +233,7 @@ void set_max_speed(void)
     }
 
     /* Configure the SSI0 port to run at 12.5MHz */
-    ROM_SSIConfigSetExpClk(SDC_SSI_BASE, 120000000,
+    ROM_SSIConfigSetExpClk(SDC_SSI_BASE, clockFreq,
                            SSI_FRF_MOTO_MODE_0, SSI_MODE_MASTER, i, 8);
 
     /* Enable the SSI */

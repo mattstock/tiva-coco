@@ -12,7 +12,7 @@ TARGET = main
 # MCU: part number to build for
 MCU = TM4C1294NCPDT
 # SOURCES: list of input source sources
-SOURCES = main.c ff.c diskio.c startup_gcc.c
+SOURCES = main.c ff.c diskio.c startup_gcc.c cocofont.c
 # INCLUDES: list of includes, by default, use Includes directory
 INCLUDES = -IInclude
 # OUTDIR: directory to use for output
