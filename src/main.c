@@ -80,6 +80,11 @@ void UART_printstr(char *str) {
   }
 }
 
+void UART_printchars(char *str, uint16_t count) {
+  for (uint16_t i=0; i < count; i++)
+    ROM_UARTCharPut(UART0_BASE, str[i]);
+}
+
 void UART_print_dirent() {
   UART_printstr("File name: "); 
   for (uint8_t i=0; i < 13; i++) {
@@ -90,6 +95,8 @@ void UART_print_dirent() {
 }
 
 int main() {
+  UINT c;
+  char buf[20];
 
   ROM_SysCtlPeripheralEnable(SPI_LED_SYSCTL);
   ROM_GPIOPinTypeGPIOOutput(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY);
@@ -108,48 +115,42 @@ int main() {
   uart_init();
   disk_initialize(0);
 
-  ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_BUSY|SPI_LED_ERROR);
+  ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_BUSY);
 
 
   if ((res = f_mount(0, &fatfs_obj))) {
     ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
+    UART_printstr("Mount failed!\r\n");
     while (1);
   }
 
-  if ((res = f_opendir(&dir_obj, (const TCHAR *)"/"))) {
-    ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
-    while (1);
-  }
-  
-  ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_BUSY);
-  if ((res = f_readdir(&dir_obj, &fno)) != FR_OK) {
-    ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
-    while (1);
-  }
-  
-  while (fno.fname[0] != '\0') {
-    UART_print_dirent(&fno);
-    if ((res = f_readdir(&dir_obj, &fno)) != FR_OK) {
-      ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
-      while (1);
-    }
-  }
-
-  ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, 0);
-	
   setAddr(0x413000);
   for (int i=0; i < 4*128; i++)
     setData(f88[i]);
 
-  uint16_t foo;
-
   setAddr(0x420000);
-  foo=0x20;  
-  while (foo < 0x80) {
-    setData((foo << 8) | (foo+1));
-    foo = foo + 2;
-    //    ROM_SysCtlDelay(100000);
+  if ((res = f_open(&fil_obj, "/test.txt", FA_READ)) != FR_OK) {
+    ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, SPI_LED_ERROR);
+    UART_printstr("Can't open test file.\r\n");
+    while (1);    
   }
+
+  while ((res = f_read(&fil_obj, buf, 20, &c)) == FR_OK) {
+    if (c == 0)
+      break;
+    for (uint8_t i=0; i < c; i+=2) {
+      if (i == c-1) {
+        setData(buf[i] << 8);
+      } else {
+        setData((buf[i] << 8) | buf[i+1]);
+      }
+    }
+    UART_printchars(buf, c);
+  }
+
+  f_close(&fil_obj);
+
+  ROM_GPIOPinWrite(SPI_LED_BASE, SPI_LED_ERROR|SPI_LED_BUSY, 0);
 
   while (1);
 }
